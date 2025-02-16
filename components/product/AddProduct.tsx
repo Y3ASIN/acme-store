@@ -44,6 +44,8 @@ export default function AddProduct({
     ? "Update the details of your product here."
     : "Add a new product to your store.";
 
+  // TODO add more field to the product
+
   const [name, setName] = useState(product?.name || "");
   const [price, setPrice] = useState(product?.price || 0);
   const [description, setDescription] = useState(product?.description || "");

@@ -12,18 +12,54 @@ type ProductInput = {
   images?: string[];
 };
 
-export async function getProducts({page=1}) {
-    const resultsPerPage = 5;
-    const skip = (page-1) * resultsPerPage;
+export async function getProducts({
+  page = 1,
+  name,
+  minPrice,
+  category,
+}: {
+  page?: number;
+  name?: string;
+  minPrice?: string;
+  category?: string;
+}) {
+  const resultsPerPage = 5;
+  const skip = (page - 1) * resultsPerPage;
+  const filterCategory = category !== "all";
 
   try {
+    // const where: any = {};
+    // if (name) {
+    //   where.name = {
+    //     contains: name,
+    //     mode: "insensitive",
+    //   };
+    // }
+    // if (category && category !== "all") {
+    //   where.category = {
+    //     equals: category,
+    //   };
+    // }
     const allProducts = await prisma.product.findMany({
       include: {
         images: true,
         reviews: true,
       },
+      // TODO add filter by rating
+      where: {
+        name: {
+          contains: name,
+          mode: "insensitive",
+        },
+        ...(filterCategory && { category: category }),
+        ...(minPrice && {
+          price: {
+            gte: parseInt(minPrice),
+          },
+        }),
+      },
       skip,
-      take: resultsPerPage, 
+      take: resultsPerPage,
     });
     const products = allProducts.map((product) => ({
       ...product,
@@ -36,7 +72,7 @@ export async function getProducts({page=1}) {
     }));
     return products;
   } catch (error) {
-    return []
+    return [];
   }
 }
 
