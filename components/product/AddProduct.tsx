@@ -4,6 +4,9 @@ import ImageSelect from "./ImageSelect";
 
 import { useState } from "react";
 import { PlusIcon } from "lucide-react";
+import { toast } from "react-toastify";
+import { Images, Product, Review } from "@prisma/client";
+import { useRouter } from "next/navigation";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -16,30 +19,67 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { createProduct, updateProduct } from "@/lib/actions/product";
 
 export const revalidate = 1;
 
+export interface ProductProps extends Product {
+  id: number;
+  reviews: Review[];
+  images: Images[];
+}
+
 export default function AddProduct({
+  product,
   edit,
   id,
 }: {
   edit?: boolean;
   id?: string;
+  product?: ProductProps;
 }) {
+  const router = useRouter();
   const title = edit ? "Edit Product " + id : "Add Product";
   const subText = edit
     ? "Update the details of your product here."
     : "Add a new product to your store.";
 
-  const [images, setImages] = useState<string[]>([]);
-  const [name, setName] = useState("");
-  const [price, setPrice] = useState(0);
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("electronics");
+  const [name, setName] = useState(product?.name || "");
+  const [price, setPrice] = useState(product?.price || 0);
+  const [description, setDescription] = useState(product?.description || "");
+  const [category, setCategory] = useState(product?.category || "");
+  const [images, setImages] = useState<string[]>(
+    product?.images.map((i) => i.url) || []
+  );
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
-    console.log({ name, category, images, description, price });
+
+    if (edit && product) {
+      const updatedProduct = await updateProduct(product.id, {
+        name,
+        price,
+        description,
+        category,
+        images,
+      });
+      if (updatedProduct) {
+        toast.success("Product updated successfully");
+        router.push(`/product/view/${updatedProduct.id}`);
+      }
+    } else {
+      const newProduct = await createProduct({
+        name,
+        category,
+        price,
+        description,
+        images,
+      });
+      if (newProduct) {
+        toast.success("Product created successfully");
+        router.push(`/product/view/${newProduct.id}`);
+      }
+    }
   };
 
   return (

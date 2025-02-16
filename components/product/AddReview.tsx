@@ -4,15 +4,28 @@ import RatingSelect from "./Review/RatingSelect";
 
 import { useState } from "react";
 
-export default function Component() {
+import { createReview } from "@/lib/actions/review";
+export default function Component({ id }: { id: string }) {
   const [rating, setRating] = useState(0);
   const [name, setName] = useState("");
   const [review, setReview] = useState("");
 
-  const handleSubmit = (event: any) => {
+  const handleSubmit = async (event: any) => {
     event.preventDefault();
 
-    console.log({ name, rating, review });
+    try {
+      await createReview({
+        name,
+        rating,
+        content: review,
+        productId: parseInt(id),
+      });
+      setName("");
+      setRating(0);
+      setReview("");
+    } catch (error) {
+      console.error("Error creating review:", error);
+    }
   };
   return (
     <section className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-md">
@@ -65,6 +78,7 @@ export default function Component() {
           <button
             className="w-full bg-black hover:bg-primary-600 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
             type="submit"
+            onClick={handleSubmit}
           >
             Submit Review
           </button>

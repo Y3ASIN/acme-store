@@ -1,7 +1,21 @@
+"use client";
+
 import { TrashIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 import { Button } from "@/components/ui/button";
+import { deleteProduct } from "@/lib/actions/product";
 export default function DeleteProduct({ id }: { id: string }) {
+  const router = useRouter();
+
+  const handleDelete = async () => {
+    const didDelete = await deleteProduct(Number(id));
+    if (didDelete) {
+      toast.success("Product deleted successfully");
+      router.push("/search");
+    }
+  };
   return (
     <div className="pt-20 flex min-h-screen items-start justify-center bg-gray-100 px-4 py-12 dark:bg-gray-900">
       <div className="w-full max-w-md space-y-6 rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
@@ -18,8 +32,15 @@ export default function DeleteProduct({ id }: { id: string }) {
           </div>
         </div>
         <div className="flex justify-center gap-4">
-          <Button variant="destructive">Confirm Delete</Button>
-          <Button variant="outline">Cancel</Button>
+          <Button variant="destructive" onClick={handleDelete}>
+            Confirm Delete
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/product/view/${id}`)}
+          >
+            Cancel
+          </Button>
         </div>
       </div>
     </div>
